@@ -4,7 +4,7 @@ import requests
 import streamlit as st
 
 
-DEFAULT_BACKEND_URL = "https://ats-scorer-backend.vercel.app"
+DEFAULT_BACKEND_URL = "http://localhost:8000"
 
 
 def _backend_url() -> str:
