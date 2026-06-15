@@ -13,4 +13,3 @@ __pycache__/
 *.safetensors
 *.pkl
 .env
-secrets.toml

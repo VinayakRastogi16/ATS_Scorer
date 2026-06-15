@@ -1,26 +1,13 @@
 from typing import Any, Dict, List
-import os
 
 import requests
 import streamlit as st
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
 
-DEFAULT_BACKEND_URL = os.getenv(
-    "BACKEND_URL",
-    "https://ats-scorer-backend.vercel.app"
-)
+DEFAULT_BACKEND_URL = "https://ats-scorer-backend.vercel.app/"
 
 
 def _backend_url() -> str:
-    """
-    Priority:
-    1. Streamlit secrets
-    2. .env BACKEND_URL
-    3. Default URL
-    """
     try:
         return st.secrets["backend"]["url"]
     except (KeyError, FileNotFoundError):
@@ -32,10 +19,7 @@ def _auth_headers(access_token: str) -> Dict[str, str]:
 
 
 def health_check() -> Dict[str, Any]:
-    response = requests.get(
-        f"{_backend_url()}/api/v1/health",
-        timeout=10
-    )
+    response = requests.get(f"{_backend_url()}/api/v1/health", timeout=10)
     response.raise_for_status()
     return response.json()
 
@@ -46,17 +30,9 @@ def analyze_resume(
     job_description: str = "",
 ) -> Dict[str, Any]:
     files = {
-        "resume": (
-            resume_file.name,
-            resume_file.getvalue(),
-            resume_file.type,
-        ),
+        "resume": (resume_file.name, resume_file.getvalue(), resume_file.type),
     }
-
-    data = {
-        "job_description": job_description
-    }
-
+    data = {"job_description": job_description}
     response = requests.post(
         f"{_backend_url()}/api/v1/analyze-resume",
         files=files,
@@ -64,7 +40,6 @@ def analyze_resume(
         headers=_auth_headers(access_token),
         timeout=180,
     )
-
     response.raise_for_status()
     return response.json()
 
@@ -75,48 +50,35 @@ def get_history(access_token: str) -> List[Dict[str, Any]]:
         headers=_auth_headers(access_token),
         timeout=30,
     )
-
     response.raise_for_status()
     return response.json()
 
 
-def delete_history_entry(
-    analysis_id: str,
-    access_token: str,
-) -> None:
+def delete_history_entry(analysis_id: str, access_token: str) -> None:
     response = requests.delete(
         f"{_backend_url()}/api/v1/history/{analysis_id}",
         headers=_auth_headers(access_token),
         timeout=30,
     )
-
     response.raise_for_status()
 
 
-def generate_pdf(
-    analysis_data: Dict[str, Any],
-    access_token: str,
-) -> bytes:
+def generate_pdf(analysis_data: Dict[str, Any], access_token: str) -> bytes:
     response = requests.post(
         f"{_backend_url()}/api/v1/generate-pdf",
         json=analysis_data,
         headers=_auth_headers(access_token),
         timeout=60,
     )
-
     response.raise_for_status()
     return response.content
 
 
-def get_history_pdf(
-    analysis_id: str,
-    access_token: str,
-) -> bytes:
+def get_history_pdf(analysis_id: str, access_token: str) -> bytes:
     response = requests.get(
         f"{_backend_url()}/api/v1/history/{analysis_id}/pdf",
         headers=_auth_headers(access_token),
         timeout=60,
     )
-
     response.raise_for_status()
     return response.content
